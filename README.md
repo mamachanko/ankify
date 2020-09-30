@@ -1,0 +1,1 @@
+# practical-vim-anki-deck
