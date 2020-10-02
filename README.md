@@ -1,1 +1,1 @@
-# practical-vim-anki-deck
+# Create Anki decks from Markdown notes
