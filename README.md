@@ -19,3 +19,13 @@ Will write a deck to `notes.apkg` called _My Notes_ with two cards:
 | Cool tools | <ul><li>xargs</li><li>awk</li></ul> |
     
 Now you can import `notes.apkg` into Anki.
+
+## todos
+ * [] fix rendering
+ * [] read from stdin
+ * [] write to stdout
+ * [] refactor to classes
+ * [] build docker image
+ * [] publish image
+ * [] look at vim-python
+
