@@ -12,6 +12,6 @@ docker run \
   $INTERACTIVETTY \
   --volume $(pwd):/src \
   --workdir /src \
-  practical_vim:latest \
+  ankify:latest \
   ${@:-python}
 

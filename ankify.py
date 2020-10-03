@@ -2,94 +2,102 @@
 
 """ TODO """
 
-from typing import List, Dict
+
+from typing import List, Dict, Union
 import hashlib
 import os
 import re
 import sys
-
 import genanki
 import markdown2
 
-def parse_notes(notes: str) -> List[Dict[str, str]]:
-    """ TODO """
-    title_regex = re.compile(r'1.\s*_(?P<title>.*)_')
 
-    cards = []
-    current = None
+def parse_notes(notes: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
+    """ TODO """
+
+    deck_title_regex = re.compile(r"# (?P<deck_title>.*)")
+    card_front_regex = re.compile(r"1.\s*_(?P<card_front>.*)_")
+
+    deck = {"title": "", "cards": []}
+    current_card = None
 
     for line in notes.splitlines():
-        if line.startswith('1.'):
-            if current:
-                cards.append(current.copy())
-            current = None
+        if line.startswith("# "):
+            deck["title"] = deck_title_regex.match(line).group("deck_title")
 
-            current = {
-                'title': title_regex.match(line).group('title'),
-                'body': ''
+        if line.startswith("1."):
+            if current_card:
+                deck["cards"].append(current_card.copy())
+            current_card = None
+
+            current_card = {
+                "front": card_front_regex.match(line).group("card_front"),
+                "back": "",
             }
 
         else:
-            if current:
-                current['body'] += line
+            if current_card:
+                current_card["back"] += line
     else:
-        if current:
-            cards.append(current.copy())
+        if current_card:
+            deck["cards"].append(current_card.copy())
 
-    return cards
+    return deck
 
-def create_deck(deck_name: str, cards: List[Dict[str, str]]) -> genanki.Deck:
+
+def create_anki_deck(deck) -> genanki.Deck:
     """ TODO """
-    deck_id = model_id = hash_int(deck_name)
-    model_name = '{} model'.format(deck_name)
+
+    deck_id = model_id = hash_int(deck["title"])
+    model_name = "{} model".format(deck["title"])
 
     model = genanki.Model(
         model_id,
         model_name,
         fields=[
-            {'name': 'Question'},
-            {'name': 'Answer'},
+            {"name": "Question"},
+            {"name": "Answer"},
         ],
         templates=[
             {
-                'name': 'Card 1',
-                'qfmt': '{{Question}}',
-                'afmt': '{{FrontSide}}<hr id="answer">{{Answer}}',
+                "name": "Card 1",
+                "qfmt": "{{Question}}",
+                "afmt": '{{FrontSide}}<hr id="answer">{{Answer}}',
             },
-        ]
+        ],
     )
 
-    deck = genanki.Deck(deck_id, deck_name)
+    anki_deck = genanki.Deck(deck_id, deck["title"])
 
-    for card in cards:
+    for card in deck["cards"]:
         note = genanki.Note(
-            model=model,
-            fields=[
-                card["title"],
-                render_markdown(card["body"])
-            ]
+            model=model, fields=[card["front"], render_markdown(card["back"])]
         )
-        deck.add_note(note)
+        anki_deck.add_note(note)
 
-    return deck
+    return anki_deck
 
 
 def save_deck(deck: genanki.Deck, name: str):
     """ TODO """
-    genanki.Package(deck).write_to_file('{}.apkg'.format(name))
+    genanki.Package(deck).write_to_file("{}.apkg".format(name))
+
 
 def get_basename_noext(filename: str) -> str:
     """ TODO """
     return os.path.splitext(os.path.basename(filename))[0]
 
+
 def hash_int(s: str) -> int:
     """ TODO """
     h = hashlib.sha256()
-    h.update(s.encode('utf-8'))
+    h.update(s.encode("utf-8"))
     return int(h.hexdigest(), 16) % (10 ** 16)
+
 
 def render_markdown(markdown: str) -> str:
     return markdown2.markdown(markdown, extras=["tables"])
+
 
 def help():
     print("Usage: {} FILE".format(sys.argv[0]))
@@ -102,8 +110,8 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
 
-    with open(filename, 'r') as notes_file:
+    with open(filename, "r") as notes_file:
         name = get_basename_noext(filename)
-        notes = parse_notes(notes_file.read())
-        deck = create_deck(name, notes)
-        save_deck(deck, name)
+        deck = parse_notes(notes_file.read())
+        anki_deck = create_anki_deck(deck)
+        save_deck(anki_deck, name)
