@@ -2,23 +2,52 @@
 
 > Create [Anki](https://apps.ankiweb.net) decks from Markdown notes 
 
+Let's say you've reading a book about command line tools and took these notes:
 ```
-cat << EOF | ankify > notes.apkg
-# My Notes
+# Command line tools
+
 1. _How to exit Vim_
  `:wq`, `:x` or `ZZ`
+
 1. _Cool tools_
  * xargs
  * awk
-EOF
 ```
-Will write a deck to `notes.apkg` called _My Notes_ with two cards:
+
+Ankify will write a deck to `notes.apkg` called _My Notes_ with two cards:
 | Front | Back |
 |-------|------|
 | How to exit Vim|`:wq`, `:x` or `ZZ`|
 | Cool tools | <ul><li>xargs</li><li>awk</li></ul> |
-    
+
 Now you can import `notes.apkg` into Anki.
+
+## Installation & usage
+
+### As a Python module
+```
+$ pip install ankify
+$ python
+>>> import ankify
+>>> ankify.ankify('notes.md', 'notes.apkg')
+```
+
+### On the command-line
+```
+$ pip install ankify
+$ cat notes | python -m ankify > notes.apk
+```
+
+### Using docker
+
+```
+$ cat notes | docker run -i mamachanko/ankify > notes.apkg
+```
+
+### Using the API
+```
+$ curl --method POST --data @notes.md --output notes.apkg --url https://ankify.io
+```
 
 ## todos
  * [x] fix markdown rendering
