@@ -21,7 +21,7 @@ Will write a deck to `notes.apkg` called _My Notes_ with two cards:
 Now you can import `notes.apkg` into Anki.
 
 ## todos
- * [] fix rendering
+ * [x] fix markdown rendering
  * [x] validate that reading from stdin amd writing to stdout works with docker run
  * [] read from stdin
  * [] write to stdout

@@ -18,6 +18,6 @@ def test_parse_notes():
         "title": "Test Notes",
         "cards": [
             {"front": "Test Note 1", "back": " * answer 1 item 1"},
-            {"front": "Test Note 2", "back": " * answer 2 item 1 * answer 2 item 2"},
+            {"front": "Test Note 2", "back": " * answer 2 item 1\n * answer 2 item 2"},
         ],
     }

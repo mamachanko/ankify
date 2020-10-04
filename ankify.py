@@ -37,7 +37,12 @@ def parse_notes(notes: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
 
         else:
             if current_card:
-                current_card["back"] += line
+                card_back = current_card["back"]
+                if card_back == "":
+                    card_back = line
+                else:
+                    card_back += "\n" + line
+                current_card["back"] = card_back
     else:
         if current_card:
             deck["cards"].append(current_card.copy())
