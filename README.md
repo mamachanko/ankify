@@ -22,10 +22,16 @@ Now you can import `notes.apkg` into Anki.
 
 ## todos
  * [] fix rendering
+ * [x] validate that reading from stdin amd writing to stdout works with docker run
  * [] read from stdin
  * [] write to stdout
  * [] refactor to classes
  * [] build docker image
  * [] publish image
- * [] look at vim-python
+ * [] create ankify website
+ * [] break out ankify.py, docker and web repositories 
+ * [] get domain
+ * [] publish module to pypi
+ * [] make module invokeable through 'python -m ankify'
+ * [] create ankify org
 
