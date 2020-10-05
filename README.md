@@ -24,6 +24,8 @@ Now you can import `notes.apkg` into Anki.
 
 ## Installation & usage
 
+> ⚠️  this is work-in-progress. none of these work ... yet. stay tuned. 🦺
+
 ### As a Python module
 ```
 $ pip install ankify
