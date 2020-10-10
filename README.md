@@ -54,6 +54,9 @@ $ curl --method POST --data @notes.md --output notes.apkg --url https://ankify.i
 ## todos
  * [x] fix markdown rendering
  * [x] validate that reading from stdin amd writing to stdout works with docker run
+ * [] investigate what the workflow of updating cards and re-importing a deck
+   would look like
+ * [] set card number
  * [] read from stdin
  * [] write to stdout
  * [] refactor to classes
