@@ -12,6 +12,18 @@ import genanki
 import markdown2
 
 
+class Deck:
+    def __init__(self, title, cards=[]):
+        self.title = title
+        self.cards = cards
+
+    def withCard(self, card):
+        return Deck(self.title, [*self.cards, card])
+
+    def __eq__(self, other):
+        return self.title == other.title and self.cards == other.cards
+
+
 def parse_notes(doc: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
     """ TODO """
     card_regex = r"^# (?P<front>[\S ]*).(?P<back>^((?!^# ).)*$)"
@@ -25,17 +37,16 @@ def parse_notes(doc: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
     else:
         title = ""
 
-    return {
-        "title": title,
-        "cards": [card_match.groupdict() for card_match in card_matches],
-    }
+    cards = [card_match.groupdict() for card_match in card_matches]
+
+    return Deck(title, cards)
 
 
-def create_anki_deck(deck) -> genanki.Deck:
+def create_anki_deck(deck: Deck) -> genanki.Deck:
     """ TODO """
 
-    deck_id = model_id = hash_int(deck["title"])
-    model_name = "{} model".format(deck["title"])
+    deck_id = model_id = hash_int(deck.title)
+    model_name = "{} model".format(deck.title)
 
     model = genanki.Model(
         model_id,
@@ -53,9 +64,9 @@ def create_anki_deck(deck) -> genanki.Deck:
         ],
     )
 
-    anki_deck = genanki.Deck(deck_id, deck["title"])
+    anki_deck = genanki.Deck(deck_id, deck.title)
 
-    for card in deck["cards"]:
+    for card in deck.cards:
         note = genanki.Note(
             model=model, fields=[card["front"], render_markdown(card["back"])]
         )
@@ -82,7 +93,9 @@ def hash_int(s: str) -> int:
 
 
 def render_markdown(markdown: str) -> str:
-    return markdown2.markdown(markdown, extras=["tables", "cuddled-lists", "fenced-code-blocks"])
+    return markdown2.markdown(
+        markdown, extras=["tables", "cuddled-lists", "fenced-code-blocks"]
+    )
 
 
 def help():

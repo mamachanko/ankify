@@ -11,15 +11,17 @@ title: The deck's title
 Back of the card
 """
 
-    assert ankify.parse_notes(doc) == {
-        "title": "The deck's title",
-        "cards": [
-            {
-                "front": "Front of the card",
-                "back": "Back of the card\n",
-            }
-        ],
-    }
+    got = ankify.parse_notes(doc)
+    want = ankify.Deck("The deck's title").withCard(
+        {
+            "front": "Front of the card",
+            "back": "Back of the card\n",
+        }
+    )
+
+    assert got == want
+
+
 def test_parses_notes_with_code():
     doc = """
 # How to quit Vim
@@ -31,13 +33,11 @@ def test_parses_notes_with_code():
 <S-z><S-z>
 ```
 """
-
-    assert ankify.parse_notes(doc) == {
-        "title": "",
-        "cards": [
-            {
-                "front": "How to quit Vim",
-                "back": """
+    got = ankify.parse_notes(doc)
+    want = ankify.Deck("").withCard(
+        {
+            "front": "How to quit Vim",
+            "back": """
 ```
 :q
 :quit!
@@ -45,9 +45,10 @@ def test_parses_notes_with_code():
 <S-z><S-z>
 ```
 """,
-            }
-        ],
-    }
+        }
+    )
+
+    assert got == want
 
 
 def test_parses_notes_with_subsection():
@@ -71,13 +72,11 @@ console.log(f(x, y))
 ```
 
 """
-
-    assert ankify.parse_notes(doc) == {
-        "title": "",
-        "cards": [
-            {
-                "front": "A tiddly-bit of Javascript",
-                "back": """
+    got = ankify.parse_notes(doc)
+    want = ankify.Deck("").withCard(
+        {
+            "front": "A tiddly-bit of Javascript",
+            "back": """
 So, Javascript is a thing.
 
 ## Some JS code
@@ -95,9 +94,10 @@ console.log(f(x, y))
 ```
 
 """,
-            }
-        ],
-    }
+        }
+    )
+
+    assert got == want
 
 
 def test_parses_notes_with_lists():
@@ -121,13 +121,11 @@ a list:
 > a interesting quote.
 > - the author
 """
-
-    assert ankify.parse_notes(doc) == {
-        "title": "",
-        "cards": [
-            {
-                "front": "Here's just some text",
-                "back": """
+    got = ankify.parse_notes(doc)
+    want = ankify.Deck("").withCard(
+        {
+            "front": "Here's just some text",
+            "back": """
 a list:
  * 1 one
  * 3 Sun Oct 11 09:32:49 2020
@@ -145,9 +143,10 @@ a list:
 > a interesting quote.
 > - the author
 """,
-            }
-        ],
-    }
+        }
+    )
+
+    assert got == want
 
 
 def test_parses_notes_with_tables():
@@ -162,12 +161,11 @@ def test_parses_notes_with_tables():
 
 """
 
-    assert ankify.parse_notes(doc) == {
-        "title": "",
-        "cards": [
-            {
-                "front": "Cool command-line tools",
-                "back": """
+    got = ankify.parse_notes(doc)
+    want = ankify.Deck("").withCard(
+        {
+            "front": "Cool command-line tools",
+            "back": """
 | Tool | What's cool |
 |------|-------------|
 | sed | replace things in streams of text |
@@ -175,6 +173,7 @@ def test_parses_notes_with_tables():
 | awk | process files |
 
 """,
-            }
-        ],
-    }
+        }
+    )
+
+    assert got == want
