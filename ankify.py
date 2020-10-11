@@ -12,34 +12,52 @@ import genanki
 import markdown2
 
 
+class Card:
+    def __init__(self, front, back):
+        self.front = front
+        self.back = back
+
+    def __eq__(self, other):
+        return self.front == other.front and self.back == other.back
+
+    def render_back(self):
+        return markdown2.markdown(
+            self.back, extras=["tables", "cuddled-lists", "fenced-code-blocks"]
+        )
+
+
 class Deck:
     def __init__(self, title, cards=[]):
         self.title = title
         self.cards = cards
 
-    def withCard(self, card):
+    def withCard(self, card: Card):
         return Deck(self.title, [*self.cards, card])
 
     def __eq__(self, other):
         return self.title == other.title and self.cards == other.cards
 
+    @staticmethod
+    def from_doc(doc: str):
+        return Deck._parse_doc(doc)
 
-def parse_notes(doc: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
-    """ TODO """
-    card_regex = r"^# (?P<front>[\S ]*).(?P<back>^((?!^# ).)*$)"
-    title_regex = r"(?<=---).*title\s*:\s*(?P<title>[\w '-_]*$).*(?=---)"
+    @staticmethod
+    def _parse_doc(doc: str):
+        """ TODO """
+        card_regex = r"^# (?P<front>[\S ]*).(?P<back>^((?!^# ).)*$)"
+        title_regex = r"(?<=---).*title\s*:\s*(?P<title>[\w '-_]*$).*(?=---)"
 
-    card_matches = re.finditer(card_regex, doc, re.MULTILINE | re.DOTALL)
+        card_matches = re.finditer(card_regex, doc, re.MULTILINE | re.DOTALL)
 
-    title_match = re.search(title_regex, doc, re.MULTILINE | re.DOTALL)
-    if title_match:
-        title = title_match["title"]
-    else:
-        title = ""
+        title_match = re.search(title_regex, doc, re.MULTILINE | re.DOTALL)
+        if title_match:
+            title = title_match["title"]
+        else:
+            title = ""
 
-    cards = [card_match.groupdict() for card_match in card_matches]
+        cards = [Card(**card_match.groupdict()) for card_match in card_matches]
 
-    return Deck(title, cards)
+        return Deck(title, cards)
 
 
 def create_anki_deck(deck: Deck) -> genanki.Deck:
@@ -68,7 +86,7 @@ def create_anki_deck(deck: Deck) -> genanki.Deck:
 
     for card in deck.cards:
         note = genanki.Note(
-            model=model, fields=[card["front"], render_markdown(card["back"])]
+            model=model, fields=[card.front, card.render_back()]
         )
         anki_deck.add_note(note)
 
@@ -92,12 +110,6 @@ def hash_int(s: str) -> int:
     return int(h.hexdigest(), 16) % (10 ** 16)
 
 
-def render_markdown(markdown: str) -> str:
-    return markdown2.markdown(
-        markdown, extras=["tables", "cuddled-lists", "fenced-code-blocks"]
-    )
-
-
 def help():
     print("Usage: {} FILE".format(sys.argv[0]))
     sys.exit(1)
@@ -111,6 +123,6 @@ if __name__ == "__main__":
 
     with open(filename, "r") as notes_file:
         name = get_basename_noext(filename)
-        deck = parse_notes(notes_file.read())
+        deck = Deck.from_doc(notes_file.read())
         anki_deck = create_anki_deck(deck)
         save_deck(anki_deck, name)

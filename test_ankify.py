@@ -11,12 +11,12 @@ title: The deck's title
 Back of the card
 """
 
-    got = ankify.parse_notes(doc)
+    got = ankify.Deck.from_doc(doc)
     want = ankify.Deck("The deck's title").withCard(
-        {
-            "front": "Front of the card",
-            "back": "Back of the card\n",
-        }
+        ankify.Card(
+            "Front of the card",
+            "Back of the card\n",
+        )
     )
 
     assert got == want
@@ -33,11 +33,11 @@ def test_parses_notes_with_code():
 <S-z><S-z>
 ```
 """
-    got = ankify.parse_notes(doc)
+    got = ankify.Deck.from_doc(doc)
     want = ankify.Deck("").withCard(
-        {
-            "front": "How to quit Vim",
-            "back": """
+        ankify.Card(
+            "How to quit Vim",
+            """
 ```
 :q
 :quit!
@@ -45,7 +45,7 @@ def test_parses_notes_with_code():
 <S-z><S-z>
 ```
 """,
-        }
+        )
     )
 
     assert got == want
@@ -72,11 +72,11 @@ console.log(f(x, y))
 ```
 
 """
-    got = ankify.parse_notes(doc)
+    got = ankify.Deck.from_doc(doc)
     want = ankify.Deck("").withCard(
-        {
-            "front": "A tiddly-bit of Javascript",
-            "back": """
+        ankify.Card(
+            "A tiddly-bit of Javascript",
+            """
 So, Javascript is a thing.
 
 ## Some JS code
@@ -94,7 +94,7 @@ console.log(f(x, y))
 ```
 
 """,
-        }
+        )
     )
 
     assert got == want
@@ -121,11 +121,11 @@ a list:
 > a interesting quote.
 > - the author
 """
-    got = ankify.parse_notes(doc)
+    got = ankify.Deck.from_doc(doc)
     want = ankify.Deck("").withCard(
-        {
-            "front": "Here's just some text",
-            "back": """
+        ankify.Card(
+            "Here's just some text",
+            """
 a list:
  * 1 one
  * 3 Sun Oct 11 09:32:49 2020
@@ -143,7 +143,7 @@ a list:
 > a interesting quote.
 > - the author
 """,
-        }
+        )
     )
 
     assert got == want
@@ -161,11 +161,11 @@ def test_parses_notes_with_tables():
 
 """
 
-    got = ankify.parse_notes(doc)
+    got = ankify.Deck.from_doc(doc)
     want = ankify.Deck("").withCard(
-        {
-            "front": "Cool command-line tools",
-            "back": """
+        ankify.Card(
+            "Cool command-line tools",
+            """
 | Tool | What's cool |
 |------|-------------|
 | sed | replace things in streams of text |
@@ -173,7 +173,48 @@ def test_parses_notes_with_tables():
 | awk | process files |
 
 """,
-        }
+        )
+    )
+
+    assert got == want
+
+
+def test_card_back_renders_as_html():
+    got = ankify.Card(
+        "front",
+        """
+| Tool | What's cool |
+|------|-------------|
+| sed | replace things in streams of text |
+| find | find files |
+| awk | process files |
+
+""",
+    ).render_back()
+
+    want = (
+        "<table>\n"
+        "<thead>\n"
+        "<tr>\n"
+        "  <th>Tool</th>\n"
+        "  <th>What's cool</th>\n"
+        "</tr>\n"
+        "</thead>\n"
+        "<tbody>\n"
+        "<tr>\n"
+        "  <td>sed</td>\n"
+        "  <td>replace things in streams of text</td>\n"
+        "</tr>\n"
+        "<tr>\n"
+        "  <td>find</td>\n"
+        "  <td>find files</td>\n"
+        "</tr>\n"
+        "<tr>\n"
+        "  <td>awk</td>\n"
+        "  <td>process files</td>\n"
+        "</tr>\n"
+        "</tbody>\n"
+        "</table>\n"
     )
 
     assert got == want
