@@ -12,42 +12,23 @@ import genanki
 import markdown2
 
 
-def parse_notes(notes: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
+def parse_notes(doc: str) -> List[Dict[str, Union[str, Dict[str, str]]]]:
     """ TODO """
+    card_regex = r"^# (?P<front>[\S ]*).(?P<back>^((?!^# ).)*$)"
+    title_regex = r"(?<=---).*title\s*:\s*(?P<title>[\w '-_]*$).*(?=---)"
 
-    deck_title_regex = re.compile(r"# (?P<deck_title>.*)")
-    card_front_regex = re.compile(r"1.\s*_(?P<card_front>.*)_")
+    card_matches = re.finditer(card_regex, doc, re.MULTILINE | re.DOTALL)
 
-    deck = {"title": "", "cards": []}
-    current_card = None
-
-    for line in notes.splitlines():
-        if line.startswith("# "):
-            deck["title"] = deck_title_regex.match(line).group("deck_title")
-
-        if line.startswith("1."):
-            if current_card:
-                deck["cards"].append(current_card.copy())
-            current_card = None
-
-            current_card = {
-                "front": card_front_regex.match(line).group("card_front"),
-                "back": "",
-            }
-
-        else:
-            if current_card:
-                card_back = current_card["back"]
-                if card_back == "":
-                    card_back = line
-                else:
-                    card_back += "\n" + line
-                current_card["back"] = card_back
+    title_match = re.search(title_regex, doc, re.MULTILINE | re.DOTALL)
+    if title_match:
+        title = title_match["title"]
     else:
-        if current_card:
-            deck["cards"].append(current_card.copy())
+        title = ""
 
-    return deck
+    return {
+        "title": title,
+        "cards": [card_match.groupdict() for card_match in card_matches],
+    }
 
 
 def create_anki_deck(deck) -> genanki.Deck:
@@ -101,7 +82,7 @@ def hash_int(s: str) -> int:
 
 
 def render_markdown(markdown: str) -> str:
-    return markdown2.markdown(markdown, extras=["tables"])
+    return markdown2.markdown(markdown, extras=["tables", "cuddled-lists", "fenced-code-blocks"])
 
 
 def help():
