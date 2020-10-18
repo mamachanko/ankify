@@ -218,3 +218,9 @@ def test_card_back_renders_as_html():
     )
 
     assert got == want
+
+
+def test_deck_id_is_unique_from_name():
+    assert ankify.Deck("some").id != ankify.Deck("other").id
+    assert ankify.Deck("some").id == ankify.Deck("some").id
+

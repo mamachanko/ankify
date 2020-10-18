@@ -34,6 +34,12 @@ class Deck:
     def withCard(self, card: Card):
         return Deck(self.title, [*self.cards, card])
 
+    @property
+    def id(self):
+        hash_func = hashlib.sha256()
+        hash_func.update(self.title.encode("utf-8"))
+        return int(hash_func.hexdigest(), 16) % (10 ** 16)
+
     def __eq__(self, other):
         return self.title == other.title and self.cards == other.cards
 
@@ -63,12 +69,9 @@ class Deck:
 def create_anki_deck(deck: Deck) -> genanki.Deck:
     """ TODO """
 
-    deck_id = model_id = hash_int(deck.title)
-    model_name = "{} model".format(deck.title)
-
     model = genanki.Model(
-        model_id,
-        model_name,
+        deck.id,
+        "{} model".format(deck.title),
         fields=[
             {"name": "Question"},
             {"name": "Answer"},
@@ -82,12 +85,10 @@ def create_anki_deck(deck: Deck) -> genanki.Deck:
         ],
     )
 
-    anki_deck = genanki.Deck(deck_id, deck.title)
+    anki_deck = genanki.Deck(deck.id, deck.title)
 
     for card in deck.cards:
-        note = genanki.Note(
-            model=model, fields=[card.front, card.render_back()]
-        )
+        note = genanki.Note(model=model, fields=[card.front, card.render_back()])
         anki_deck.add_note(note)
 
     return anki_deck
@@ -101,13 +102,6 @@ def save_deck(deck: genanki.Deck, name: str):
 def get_basename_noext(filename: str) -> str:
     """ TODO """
     return os.path.splitext(os.path.basename(filename))[0]
-
-
-def hash_int(s: str) -> int:
-    """ TODO """
-    h = hashlib.sha256()
-    h.update(s.encode("utf-8"))
-    return int(h.hexdigest(), 16) % (10 ** 16)
 
 
 def help():
