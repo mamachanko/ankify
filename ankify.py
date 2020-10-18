@@ -40,8 +40,41 @@ class Deck:
         hash_func.update(self.title.encode("utf-8"))
         return int(hash_func.hexdigest(), 16) % (10 ** 16)
 
+    def as_anki_deck(self):
+        model = genanki.Model(
+            self.id,
+            "{} model".format(self.title),
+            fields=[
+                {"name": "Question"},
+                {"name": "Answer"},
+            ],
+            templates=[
+                {
+                    "name": "Card 1",
+                    "qfmt": "{{Question}}",
+                    "afmt": '{{FrontSide}}<hr id="answer">{{Answer}}',
+                },
+            ],
+        )
+
+        anki_deck = genanki.Deck(self.id, self.title)
+
+        for card in self.cards:
+            note = genanki.Note(model=model, fields=[card.front, card.render_back()])
+            anki_deck.add_note(note)
+
+        return anki_deck
+
+    def save_as(self, filename):
+        genanki.Package(self.as_anki_deck()).write_to_file(filename)
+
     def __eq__(self, other):
         return self.title == other.title and self.cards == other.cards
+
+    @staticmethod
+    def from_file(filename: str):
+        with open(filename, "r") as file:
+            return Deck.from_doc(file.read())
 
     @staticmethod
     def from_doc(doc: str):
@@ -66,39 +99,6 @@ class Deck:
         return Deck(title, cards)
 
 
-def create_anki_deck(deck: Deck) -> genanki.Deck:
-    """ TODO """
-
-    model = genanki.Model(
-        deck.id,
-        "{} model".format(deck.title),
-        fields=[
-            {"name": "Question"},
-            {"name": "Answer"},
-        ],
-        templates=[
-            {
-                "name": "Card 1",
-                "qfmt": "{{Question}}",
-                "afmt": '{{FrontSide}}<hr id="answer">{{Answer}}',
-            },
-        ],
-    )
-
-    anki_deck = genanki.Deck(deck.id, deck.title)
-
-    for card in deck.cards:
-        note = genanki.Note(model=model, fields=[card.front, card.render_back()])
-        anki_deck.add_note(note)
-
-    return anki_deck
-
-
-def save_deck(deck: genanki.Deck, name: str):
-    """ TODO """
-    genanki.Package(deck).write_to_file("{}.apkg".format(name))
-
-
 def get_basename_noext(filename: str) -> str:
     """ TODO """
     return os.path.splitext(os.path.basename(filename))[0]
@@ -115,8 +115,6 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
 
-    with open(filename, "r") as notes_file:
-        name = get_basename_noext(filename)
-        deck = Deck.from_doc(notes_file.read())
-        anki_deck = create_anki_deck(deck)
-        save_deck(anki_deck, name)
+    name = get_basename_noext(filename)
+    Deck.from_file(filename).save_as("{}.apkg".format(name))
+

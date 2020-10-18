@@ -1,5 +1,8 @@
 import ankify
+import os
+import tempfile
 import inspect
+import genanki
 
 
 def test_parses_title():
@@ -220,7 +223,66 @@ def test_card_back_renders_as_html():
     assert got == want
 
 
-def test_deck_id_is_unique_from_name():
+def test_deck_id_is_unique_by_name():
     assert ankify.Deck("some").id != ankify.Deck("other").id
     assert ankify.Deck("some").id == ankify.Deck("some").id
 
+
+def test_deck_provides_anki_deck():
+    anki_deck = (
+        ankify.Deck("test-deck")
+        .withCard(ankify.Card("front-1", "back-1"))
+        .withCard(ankify.Card("front-2", "back-2"))
+    ).as_anki_deck()
+
+    assert isinstance(anki_deck, genanki.Deck)
+    assert anki_deck.name == "test-deck"
+    assert len(anki_deck.notes) == 2
+    assert anki_deck.deck_id == ankify.Deck("test-deck").id
+
+
+def test_deck_saves_to_disk():
+    _, tmp_file = tempfile.mkstemp()
+
+    ankify.Deck("test-deck").withCard(ankify.Card("front-1", "back-1")).withCard(
+        ankify.Card("front-2", "back-2")
+    ).save_as(tmp_file)
+
+    assert os.path.exists(tmp_file)
+
+
+def test_deck_reads_from_file():
+    _, tmp_file = tempfile.mkstemp()
+
+    doc = """
+---
+title: The deck's title
+---
+# How to quit Vim
+
+```
+:q
+:quit!
+:wq
+<S-z><S-z>
+```
+"""
+    with open(tmp_file, "w") as notes_file:
+        notes_file.write(doc)
+
+    got = ankify.Deck.from_file(tmp_file)
+    want = ankify.Deck("The deck's title").withCard(
+        ankify.Card(
+            "How to quit Vim",
+            """
+```
+:q
+:quit!
+:wq
+<S-z><S-z>
+```
+""",
+        )
+    )
+
+    assert got == want
