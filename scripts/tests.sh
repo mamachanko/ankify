@@ -10,7 +10,7 @@ main() {
 }
 
 unit_tests() {
-  ./scripts/py.sh pytest -vv
+  pytest -vv
 }
 
 e2e_tests() {

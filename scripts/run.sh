@@ -4,5 +4,5 @@ set -euo pipefail
 
 cd "$(dirname "$0")"/..
 
-./scripts/py.sh ./ankify.py $@
+./ankify.py "$@"
 

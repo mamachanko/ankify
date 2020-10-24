@@ -117,4 +117,3 @@ if __name__ == "__main__":
 
     name = get_basename_noext(filename)
     Deck.from_file(filename).save_as("{}.apkg".format(name))
-
