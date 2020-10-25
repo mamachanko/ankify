@@ -58,8 +58,8 @@ $ curl --method POST --data @notes.md --output notes.apkg --url https://ankify.i
    would look like
  * [] return stabel guids for notes (see [here](https://github.com/kerrickstaley/genanki#note-guids))
  * [] set card number
- * [] read from stdin
- * [] write to stdout
+ * [x] read from stdin
+ * [x] write to stdout
  * [x] refactor to classes
  * [] build docker image
  * [] publish image
