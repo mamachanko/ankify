@@ -4,12 +4,13 @@
 
 
 from typing import List, Dict, Union
+import genanki
 import hashlib
+import markdown2
 import os
 import re
 import sys
-import genanki
-import markdown2
+import tempfile
 
 
 class Card:
@@ -68,6 +69,12 @@ class Deck:
     def save_as(self, filename):
         genanki.Package(self.as_anki_deck()).write_to_file(filename)
 
+    def read_anki_deck(self) -> str:
+        _, tmp_file = tempfile.mkstemp()
+        genanki.Package(self.as_anki_deck()).write_to_file(tmp_file)
+        with open(tmp_file, "rb") as file:
+            return file.read()
+
     def __eq__(self, other):
         return self.title == other.title and self.cards == other.cards
 
@@ -105,7 +112,7 @@ def get_basename_noext(filename: str) -> str:
 
 
 def help():
-    print("Usage: {} FILE".format(sys.argv[0]))
+    print("Usage: {} [ FILE | - ]".format(sys.argv[0]))
     sys.exit(1)
 
 
@@ -115,5 +122,9 @@ if __name__ == "__main__":
 
     filename = sys.argv[1]
 
-    name = get_basename_noext(filename)
-    Deck.from_file(filename).save_as("{}.apkg".format(name))
+    if filename == "-":
+        doc = sys.stdin.read()
+        sys.stdout.buffer.write(Deck.from_doc(doc).read_anki_deck())
+    else:
+        name = get_basename_noext(filename)
+        Deck.from_file(filename).save_as("{}.apkg".format(name))
